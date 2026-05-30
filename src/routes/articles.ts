@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import db from "../db";
+import { requireAuth } from "../middleware/auth";
 
 const router = Router();
 
@@ -23,14 +24,14 @@ router.get("/:id", (req: Request, res: Response) => {
   res.json(article);
 });
 
-router.post("/", (req: Request, res: Response) => {
+router.post("/", requireAuth, (req: Request, res: Response) => {
   db.prepare(
     "INSERT INTO articles (title, content, author_id) VALUES (?, ?, ?)",
   ).run(req.body.title, req.body.content, req.body.author_id);
   res.status(201).json({ success: "Article was created" });
 });
 
-router.put("/:id", (req: Request, res: Response) => {
+router.put("/:id", requireAuth, (req: Request, res: Response) => {
   const article = db
     .prepare("SELECT * FROM articles WHERE id = ?")
     .get(req.params.id);
@@ -48,7 +49,7 @@ router.put("/:id", (req: Request, res: Response) => {
   res.status(200).json({ success: "Article was updated" });
 });
 
-router.delete("/:id", (req: Request, res: Response) => {
+router.delete("/:id", requireAuth, (req: Request, res: Response) => {
   const article = db
     .prepare("SELECT * FROM articles WHERE id = ?")
     .get(req.params.id);
