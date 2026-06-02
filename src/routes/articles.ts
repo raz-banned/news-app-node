@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import db from "../db";
-import { requireAuth } from "../middleware/auth";
+import { AuthRequest, requireAuth } from "../middleware/auth";
 
 const router = Router();
 
@@ -24,10 +24,10 @@ router.get("/:id", (req: Request, res: Response) => {
   res.json(article);
 });
 
-router.post("/", requireAuth, (req: Request, res: Response) => {
+router.post("/", requireAuth, (req: AuthRequest, res: Response) => {
   db.prepare(
     "INSERT INTO articles (title, content, author_id) VALUES (?, ?, ?)",
-  ).run(req.body.title, req.body.content, req.body.author_id);
+  ).run(req.body.title, req.body.content, req.user!.id);
   res.status(201).json({ success: "Article was created" });
 });
 
