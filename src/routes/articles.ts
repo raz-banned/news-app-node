@@ -4,6 +4,14 @@ import { AuthRequest, requireAuth } from "../middleware/auth";
 
 const router = Router();
 
+interface Article {
+  id: number;
+  title: string;
+  content: string;
+  author_id: number;
+  created_at: string;
+}
+
 router.get("/", (req: Request, res: Response) => {
   const articles = db
     .prepare("SELECT * FROM articles ORDER BY created_at DESC")
@@ -41,10 +49,14 @@ router.post("/", requireAuth, (req: AuthRequest, res: Response) => {
 router.put("/:id", requireAuth, (req: AuthRequest, res: Response) => {
   const article = db
     .prepare("SELECT * FROM articles WHERE id = ?")
-    .get(req.params.id);
+    .get(req.params.id) as Article | undefined;
 
   if (!article) {
     res.status(404).json({ error: "Article not found" });
+    return;
+  }
+  if (article.author_id !== req.user!.id) {
+    res.status(403).json({ error: "You are not allowed to edit this article" });
     return;
   }
 
@@ -63,10 +75,16 @@ router.put("/:id", requireAuth, (req: AuthRequest, res: Response) => {
 router.delete("/:id", requireAuth, (req: AuthRequest, res: Response) => {
   const article = db
     .prepare("SELECT * FROM articles WHERE id = ?")
-    .get(req.params.id);
+    .get(req.params.id) as Article | undefined;
 
   if (!article) {
     res.status(404).json({ error: "Article not found" });
+    return;
+  }
+  if (article.author_id !== req.user!.id) {
+    res
+      .status(403)
+      .json({ error: "You are not allowed to delete this article" });
     return;
   }
 
