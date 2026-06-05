@@ -3,6 +3,12 @@ import db from "./index";
 
 const password = bcrypt.hashSync("password123", 10);
 
+db.prepare("DELETE FROM articles").run();
+db.prepare("DELETE FROM users").run();
+db.prepare(
+  "DELETE FROM sqlite_sequence WHERE name='users' OR name='articles'",
+).run();
+
 const user = db
   .prepare("INSERT INTO users (username, password) VALUES (?, ?)")
   .run("admin", password);
