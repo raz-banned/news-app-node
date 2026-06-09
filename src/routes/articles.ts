@@ -26,14 +26,18 @@ router.get("/", (req: Request, res: Response) => {
 router.get("/:id", (req: Request, res: Response) => {
   const article = db
     .prepare("SELECT * FROM articles WHERE id = ?")
-    .get(req.params.id);
+    .get(req.params.id) as Article | undefined;
 
   if (!article) {
     res.status(404).json({ error: "Article not found" });
     return;
   }
 
-  res.json(article);
+  db.prepare("UPDATE articles SET views = views + 1 WHERE id = ?").run(
+    req.params.id,
+  );
+
+  res.json({ ...article, views: article.views + 1 });
 });
 
 router.post("/", requireAuth, (req: AuthRequest, res: Response) => {
