@@ -15,10 +15,22 @@ interface Article {
   created_at: string;
 }
 
+interface ArticlesQuery {
+  page?: string;
+  limit?: string;
+}
+
 router.get("/", (req: Request, res: Response) => {
-  const articles = db
-    .prepare("SELECT * FROM articles ORDER BY created_at DESC")
-    .all();
+  const page = parseInt((req.query as ArticlesQuery).page || "1", 10);
+  const limit = parseInt((req.query as ArticlesQuery).limit || "12", 10);
+
+  const articles = page
+    ? db
+        .prepare(
+          "SELECT * FROM articles ORDER by created_at DESC LIMIT ? OFFSET ?",
+        )
+        .all(limit, (page - 1) * limit)
+    : db.prepare("SELECT * FROM articles ORDER BY created_at DESC").all();
 
   res.json(articles);
 });
