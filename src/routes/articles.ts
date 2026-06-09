@@ -41,11 +41,14 @@ router.get("/:id", (req: Request, res: Response) => {
 });
 
 router.post("/", requireAuth, (req: AuthRequest, res: Response) => {
+  const { title, content, category = "Общество", image_url = null } = req.body;
+
   const info = db
     .prepare(
-      "INSERT INTO articles (title, content, author_id) VALUES (?, ?, ?)",
+      "INSERT INTO articles (title, content, author_id, category, image_url) VALUES (?, ?, ?, ?, ?)",
     )
-    .run(req.body.title, req.body.content, req.user!.id);
+    .run(title, content, req.user!.id, category, image_url);
+
   const newArticle = db
     .prepare("SELECT * FROM articles WHERE id = ?")
     .get(info.lastInsertRowid);
