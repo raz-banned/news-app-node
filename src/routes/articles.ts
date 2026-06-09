@@ -70,11 +70,17 @@ router.put("/:id", requireAuth, (req: AuthRequest, res: Response) => {
     return;
   }
 
-  db.prepare("UPDATE articles SET title = ?, content = ? WHERE id = ?").run(
-    req.body.title,
-    req.body.content,
-    req.params.id,
-  );
+  const {
+    title,
+    content,
+    category = article.category,
+    image_url = article.image_url,
+  } = req.body;
+
+  db.prepare(
+    "UPDATE articles SET title = ?, content = ?, category = ?, image_url = ? WHERE id = ?",
+  ).run(title, content, category, image_url, req.params.id);
+
   const updatedArticle = db
     .prepare("SELECT * FROM articles WHERE id = ?")
     .get(req.params.id);
