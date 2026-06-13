@@ -16,23 +16,37 @@ interface Article {
 }
 
 interface ArticlesQuery {
-  page?: string;
+  cursor?: string;
   limit?: string;
 }
 
 router.get("/", (req: Request, res: Response) => {
-  const page = parseInt((req.query as ArticlesQuery).page || "1", 10);
+  const cursor = parseInt((req.query as ArticlesQuery).cursor || "0", 10);
   const limit = parseInt((req.query as ArticlesQuery).limit || "12", 10);
 
-  const articles = page
-    ? db
-        .prepare(
-          "SELECT * FROM articles ORDER by created_at DESC LIMIT ? OFFSET ?",
-        )
-        .all(limit, (page - 1) * limit)
-    : db.prepare("SELECT * FROM articles ORDER BY created_at DESC").all();
+  const articles = (
+    cursor
+      ? db
+          .prepare(
+            "SELECT * FROM articles WHERE id < ? ORDER by id DESC LIMIT ?",
+          )
+          .all(cursor, limit)
+      : db.prepare("SELECT * FROM articles ORDER BY id DESC").all()
+  ) as Article[];
 
-  res.json(articles);
+  const nextCursor =
+    articles.length === limit && articles.length > 0
+      ? articles[articles.length - 1].id
+      : null;
+
+  res.json(
+    cursor
+      ? {
+          articles,
+          nextCursor,
+        }
+      : articles,
+  );
 });
 
 router.get("/:id", (req: Request, res: Response) => {
