@@ -7,7 +7,7 @@ import authRouter from "./routes/auth";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(",")
   : [];
@@ -38,6 +38,6 @@ app.use(express.json());
 app.use("/api/articles", articlesRouter);
 app.use("/api/auth", authRouter);
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
