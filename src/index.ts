@@ -7,7 +7,8 @@ import authRouter from "./routes/auth";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+const rawPort = process.env.PORT || "3000";
+const PORT: number = parseInt(rawPort, 10);
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(",").map((url) =>
       url.trim().replace(/[\r\n]/g, ""),
